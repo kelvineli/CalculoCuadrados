@@ -1,15 +1,44 @@
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+
 public class Main {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+        List<Integer> numeros= new ArrayList<>();
+        for (int i= 1; i<= 20; i++) {
+            numeros.add(i);
+        }
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+        ExecutorService pool= Executors.newFixedThreadPool(4);
+
+        List<Future<Integer>> resultados= new ArrayList<>();
+
+        for (int numero : numeros) {
+            Callable<Integer> tarea= () -> {
+                int cuadrado= numero*numero;
+                System.out.printf("Número: %02d | Cuadrado: %04d | Hilo: %s%n",
+                        numero, cuadrado, Thread.currentThread().getName());
+                return cuadrado;
+            };
+            Future<Integer> futuro= pool.submit(tarea);
+            resultados.add(futuro);
+        }
+
+        pool.shutdown();
+
+        List<Integer> lista_cuadrados= new ArrayList<>();
+        for (Future<Integer> futuro : resultados) {
+            try {
+                lista_cuadrados.add(futuro.get());
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("\nResultados finales en orden:");
+        for (int i= 0; i< numeros.size(); i++) {
+            System.out.printf("Número: %02d | Cuadrado: %04d%n",
+                    numeros.get(i), lista_cuadrados.get(i));
         }
     }
 }
